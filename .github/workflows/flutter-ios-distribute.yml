@@ -2,55 +2,61 @@ name: Build & Distribute iOS via Firebase
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
 
 jobs:
   build_ios:
+    name: Build & Distribute iOS
     runs-on: macos-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.24.0' # Ganti sesuai versi kamu
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Decode and import signing certificate
-        run: |
-          echo "${{ secrets.IOS_CERTIFICATE }}" | base64 -d > certificate.p12
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P "${{ secrets.CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+      - name: Decode iOS Certificate
+        run: echo "${{ secrets.IOS_CERTIFICATE }}" | base64 --decode > certificate.p12
 
-      - name: Decode and install provisioning profile
-        run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "${{ secrets.IOS_PROFILE }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+      - name: Decode Provisioning Profile
+        run: echo "${{ secrets.IOS_PROFILE }}" | base64 --decode > profile.mobileprovision
 
-      - name: Decode export options plist
+      - name: Decode Export Options Plist
         run: echo "${{ secrets.EXPORT_OPTIONS_PLIST }}" | base64 --decode > ExportOptions.plist
 
-      - name: Build iOS IPA
+      - name: Install certificate
         run: |
-          flutter build ipa --release --export-options-plist=ExportOptions.plist
+          security create-keychain -p "apple123" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "apple123" build.keychain
+          security import certificate.p12 -k build.keychain -P "${{ secrets.CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "apple123" build.keychain
 
-      - name: Save Firebase credentials
-        run: echo '${{ secrets.FIREBASE_TOKEN }}' > $HOME/firebase_token.txt
+      - name: Install provisioning profile
+        run: mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles && cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: Install Firebase CLI
-        run: curl -sL https://firebase.tools | bash
+      - name: Build archive
+        run: |
+          flutter build ipa \
+            --release \
+            --export-options-plist=ExportOptions.plist \
+            --build-name=1.0.0 \
+            --build-number=1
+
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.DEV_TEAM_ID }}
 
       - name: Upload to Firebase App Distribution
-        run: |
-          firebase appdistribution:distribute build/ios/ipa/*.ipa \
-            --app "${{ secrets.FIREBASE_APP_ID }}" \
-            --token "${{ secrets.FIREBASE_TOKEN }}" \
-            --groups "testers" \
-            --release-notes "Distribusi iOS otomatis via GitHub Actions"
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: testers
+          file: build/ios/ipa/Runner.ipa

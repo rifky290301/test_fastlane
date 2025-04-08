@@ -15,7 +15,7 @@
     <string>FG3GT2JYFB</string>
     <key>provisioningProfiles</key>
     <dict>
-        <key>FG3GT2JYFB.com.dgw.solution</key>
+        <key>com.dgw.solution</key>
         <string>XC com dgw solution</string>
     </dict>
 </dict>
