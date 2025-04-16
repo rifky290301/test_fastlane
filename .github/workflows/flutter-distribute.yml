@@ -26,36 +26,36 @@ jobs:
         run: |
           echo '${{ secrets.GCP_CREDENTIALS_JSON }}' > $GITHUB_WORKSPACE/assets/credentials/development/google_cloud.json
 
-      # - name: Install dependencies
-      #   run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-      # - name: Decode Keystore
-      #   run: |
-      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
 
-      # - name: Create key.properties
-      #   run: |
-      #     echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-      #     echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-      #     echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-      #     echo "storeFile=release.keystore" >> android/key.properties
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=release.keystore" >> android/key.properties
 
-      # - name: Build APK (release)
-      #   run: flutter build apk --release
+      - name: Build APK (release)
+        run: flutter build apk --release
 
-      # - name: Write Firebase credentials
-      #   run: echo '${{ secrets.FIREBASE_CREDENTIALS }}' > $HOME/firebase.json
-      #   env:
-      #     GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
+      - name: Write Firebase credentials
+        run: echo '${{ secrets.FIREBASE_CREDENTIALS }}' > $HOME/firebase.json
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
 
-      # - name: Install Firebase CLI
-      #   run: |
-      #     curl -sL https://firebase.tools | bash
+      - name: Install Firebase CLI
+        run: |
+          curl -sL https://firebase.tools | bash
 
-      # - name: Distribute APK to Firebase
-      #   run: |
-      #     firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
-      #       --app "1:784716769060:android:1613a12ff9192942be75b1" \
-      #       --release-notes "Distribusi otomatis dari GitHub Actions" \
-      #       --groups "testers" \
-      #       --token ${{ secrets.FIREBASE_TOKEN }}
+      - name: Distribute APK to Firebase
+        run: |
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+            --app "1:784716769060:android:1613a12ff9192942be75b1" \
+            --release-notes "Distribusi otomatis dari GitHub Actions" \
+            --groups "testers" \
+            --token ${{ secrets.FIREBASE_TOKEN }}
