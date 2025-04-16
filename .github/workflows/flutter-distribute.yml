@@ -18,7 +18,7 @@ jobs:
           flutter-version: '3.24.0'  # Sesuaikan versi kamu
 
       - name: Create .env.development file
-        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > $GITHUB_WORKSPACE/.env.development
+        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > | base64 --decode > .env.development
 
       - name: Create GCP credentials JSON
         run: |
