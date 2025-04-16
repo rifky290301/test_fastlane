@@ -43,10 +43,10 @@ jobs:
       - name: Build APK (release)
         run: flutter build apk --release
 
-      - name: Write Firebase credentials
-        run: echo '${{ secrets.FIREBASE_CREDENTIALS }}' > $HOME/firebase.json
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: $HOME/firebase.json
+      - name: Setup Google Application Credentials
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS }}' > ${{ runner.temp }}/firebase-service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ runner.temp }}/firebase-service-account.json" >> $GITHUB_ENV
 
       - name: Install Firebase CLI
         run: |
@@ -57,5 +57,4 @@ jobs:
           firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
             --app "1:784716769060:android:1613a12ff9192942be75b1" \
             --release-notes "Distribusi otomatis dari GitHub Actions" \
-            --groups "testers" \
-            --token ${{ secrets.FIREBASE_TOKEN }}
+            --groups "testers"
