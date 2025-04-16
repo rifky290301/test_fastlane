@@ -19,6 +19,7 @@ jobs:
 
       - name: Create .env.development file
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > | base64 --decode > .env.development
+        shell: bash
 
       - name: Create GCP credentials JSON
         run: |
