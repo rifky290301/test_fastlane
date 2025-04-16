@@ -17,8 +17,9 @@ jobs:
         with:
           flutter-version: '3.24.0'  # Sesuaikan versi kamu
 
-      - name: Create .env.development file
-        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > | base64 --decode > .env.development
+      - name: Restore .env.development from secret
+        run: |
+          echo "${{ secrets.ENV_DEVELOPMENT }}" | base64 --decode > .env.development
         shell: bash
 
       - name: Create GCP credentials JSON
