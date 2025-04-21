@@ -1,8 +1,16 @@
 name: Build & Distribute Flutter APK via Firebase
 
 on:
-  push:
-    branches: [master]  # Jalankan saat push ke main
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: 'Build type (apk or aab)'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - aab
 
 jobs:
   build:
@@ -40,8 +48,13 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=release.keystore" >> android/key.properties
 
-      - name: Build APK (release)
-        run: flutter build apk --release
+      - name: Build Android APK/AAB
+        run: |
+          if [ "${{ github.event.inputs.buildType }}" == "apk" ]; then
+            flutter build apk --release
+          else
+            flutter build appbundle --release
+          fi
 
       - name: Setup Google Application Credentials
         run: |
@@ -54,7 +67,6 @@ jobs:
 
       - name: Distribute APK to Firebase
         run: |
-          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+          firebase appdistribution:distribute ${{ github.event.inputs.buildType == 'apk' && 'build/app/outputs/flutter-apk/app-release.apk' || 'build/app/outputs/bundle/release/app-release.aab' }} \
             --app "1:784716769060:android:1613a12ff9192942be75b1" \
             --release-notes "Distribusi otomatis dari GitHub Actions" \
-            --groups "testers"
